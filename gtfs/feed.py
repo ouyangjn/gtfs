@@ -3,6 +3,10 @@ import errno
 from zipfile import ZipFile
 from csv import DictReader
 
+def UnicodeDictReader(utf8_data, **kwargs):
+    csv_reader = DictReader(utf8_data, **kwargs)
+    for row in csv_reader:
+        yield dict([(key, unicode(value, 'utf-8')) for key, value in row.iteritems()])
 
 class Feed(object):
     """A Feed is a collection of CSV files with headers, either zipped into
@@ -30,7 +34,7 @@ class Feed(object):
                 else:
                     raise
 
-        dr = DictReader(f)
+        dr = UnicodeDictReader(f)
         return dr
 
 
