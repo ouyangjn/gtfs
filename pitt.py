@@ -1,0 +1,62 @@
+import sys
+
+from datetime import date
+from gtfs import Schedule
+from gtfs.entity import Trip, Route
+from sqlalchemy import create_engine, distinct, func, select
+from sqlalchemy.orm import sessionmaker
+
+# config
+db_filename = "pitt_1611.db"
+
+# date
+if len(sys.argv) == 1:
+    target_date = date.today()
+elif len(sys.argv) == 4:
+    target_date = date(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
+else:
+    print "Usage: %s <year> <month> <day>" % sys.argv[0]
+
+# init
+engine = create_engine("sqlite:///" + db_filename)
+conn = engine.connect()
+Session = sessionmaker(bind=engine)
+session = Session()
+
+sched = Schedule(db_filename)
+print "GTFS Stats:", target_date
+
+# Active services
+active_services = sched.service_for_date(target_date)
+if len(active_services) == 0:
+    raise DateNotFoundError()
+print "Active services:"
+for service in active_services:
+    print "\t", service
+
+# Routes
+q = Route.query
+total_route_count = q.count()
+q = q.join(Trip)
+q = q.filter(Trip.service_id.in_(active_services))
+active_routes = q.all()
+print "Active/Total Routes:", len(active_routes), "/", total_route_count
+#for r in active_routes:
+#    print r.route_short_name,
+#print
+
+# Trips
+q = Trip.query
+total_trip_count = q.count()
+q = q.filter(Trip.service_id.in_(active_services))
+active_trip_count = q.count()
+print "Active/Total Trips:", active_trip_count, "/", total_trip_count
+
+# Blocks
+total_block_count = session.query(Trip.block_id).distinct().count()
+q = session.query(Trip.block_id)
+q = q.filter(Trip.service_id.in_(active_services))
+active_block_count = q.distinct().count()
+print "Active/Total Blocks:", active_block_count, "/", total_block_count
+
+

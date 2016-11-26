@@ -44,7 +44,7 @@ class Schedule:
         active_periods = [r[0] for r in q.all()]
 
         for period in self.service_periods:
-            if period.active_on_date(service_date):
+            if period.active_on_date(service_date) and period.service_id not in active_periods:
                 active_periods.append(period.service_id)
 
         return active_periods
