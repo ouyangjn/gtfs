@@ -1,12 +1,12 @@
-from datetime import date
-
+import pytz
 import sqlalchemy
+
+from datetime import datetime
+from gtfs.types import TransitTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.types import String, Integer, Float, Date, Boolean
-
-from gtfs.types import TransitTime
+from sqlalchemy.types import String, Integer, Float, Date, Boolean, TIMESTAMP
 
 
 def make_boolean(value):
@@ -25,6 +25,14 @@ def make_date(value):
 
 def make_time(value):
     return TransitTime(value)
+
+
+def make_timestamp(value):
+    EASTERN_TIME = pytz.timezone('US/Eastern')
+    # "tmstmp": "20161107 23:59"
+    return datetime(int(value[0:4]), int(value[4:6]), int(value[6:8]),
+		    int(value[9:11]), int(value[12:13]),
+		    tzinfo=EASTERN_TIME)
 
 
 class TransitTimeType(sqlalchemy.types.TypeDecorator):
@@ -363,3 +371,34 @@ class Transfer(Entity, Base):
     to_stop = relationship(Stop,
                            primaryjoin="Transfer.to_stop_id==Stop.stop_id",
                            backref="transfers_from")
+
+
+class HistoricalVehicleLocation(Entity, Base):
+    __tablename__ = "historical_vehicle_locations"
+
+    #timestamp = Column(TIMESTAMP, primary_key=True)  
+    #trip_id = Column(String, ForeignKey("trips.trip_id"), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(TIMESTAMP, nullable=False) 
+    trip_id = Column(String, ForeignKey("trips.trip_id"), nullable=False)
+    vehicle_id = Column(Integer, nullable=False)
+    vehicle_lon = Column(Float, nullable=False)
+    vehicle_lat = Column(Float, nullable=False)
+    vehicle_heading = Column(Integer, nullable=False)
+    vehicle_speed = Column(Integer, nullable=False)
+    vehicle_shape_distance = Column(Integer, nullable=False)
+
+    inbound_conversions = {
+      'timestamp': make_timestamp,
+      'vehicle_id': int,
+      'vehicle_lon': float,
+      'vehicle_lat': float,
+      'vehicle_heading': int,
+      'vehicle_speed': int,
+      'vehicle_shape_distance': int
+    }
+
+    trip = relationship(Trip, backref="historical_vehicle_locations")
+
+    def __repr__(self):
+        return "<Location trip_id %s vid %s>" % (self.trip_id, self.vehicle_id)
