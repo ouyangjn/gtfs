@@ -1,4 +1,4 @@
-import pytz
+#import pytz
 import sqlalchemy
 
 from datetime import datetime
@@ -28,11 +28,11 @@ def make_time(value):
 
 
 def make_timestamp(value):
-    EASTERN_TIME = pytz.timezone('US/Eastern')
+    #EASTERN_TIME = pytz.timezone('US/Eastern')
     # "tmstmp": "20161107 23:59"
     return datetime(int(value[0:4]), int(value[4:6]), int(value[6:8]),
-		    int(value[9:11]), int(value[12:13]),
-		    tzinfo=EASTERN_TIME)
+		    int(value[9:11]), int(value[12:14]))
+		    # tzinfo=EASTERN_TIME)
 
 
 class TransitTimeType(sqlalchemy.types.TypeDecorator):
