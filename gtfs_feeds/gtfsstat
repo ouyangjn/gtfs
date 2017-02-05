@@ -12,11 +12,12 @@ from sqlalchemy import create_engine, distinct, func, select
 from sqlalchemy.orm import sessionmaker
 
 # config
-db_filename = "pitt_1609.sqlite3"
+db_filename = "general_transit_CleverTripID_1609.sqlite3"
 
 # date
 if len(sys.argv) == 1:
-    target_date = date.today()
+    # target_date = date.today()
+    target_date = date(2016, 10, 01)
 elif len(sys.argv) == 4:
     target_date = date(int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
 else:
@@ -62,5 +63,3 @@ q = session.query(Trip.block_id)
 q = q.filter(Trip.service_id.in_(active_services))
 active_block_count = q.distinct().count()
 print "Active/Total Blocks:", active_block_count, "/", total_block_count
-
-
