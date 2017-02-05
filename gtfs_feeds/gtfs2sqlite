@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from optparse import OptionParser
 import os
 
@@ -6,7 +7,7 @@ from gtfs.schedule import Schedule
 
 
 def main():
-    usage = "usage: %prog [options] gtfs_filename"
+    usage = "Usage: %prog [options] gtfs.zip"
     parser = OptionParser(usage)
     parser.add_option("-o", "--output_filename", dest="output_filename")
 
@@ -15,14 +16,15 @@ def main():
     if len(args) != 1:
         parser.error("No gtfs filename supplied")
 
-    gtfs_filename = args[0]
+    gtfs_file = args[0]
 
     if options.output_filename:
         output_filename = options.output_filename
     else:
-        output_filename = os.path.splitext(gtfs_filename)[0] + ".db"
+        output_filename = os.path.splitext(os.path.basename(gtfs_file))[0] + ".sqlite3"
 
-    load(gtfs_filename, output_filename)
+    print "Loading GTFS feed to " + output_filename 
+    load(gtfs_file, output_filename)
 
 if __name__ == '__main__':
     main()

@@ -1,6 +1,7 @@
 #import pytz
 import sqlalchemy
 
+from datetime import date
 from datetime import datetime
 from gtfs.types import TransitTime
 from sqlalchemy.orm import relationship
